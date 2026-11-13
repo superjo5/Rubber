@@ -56,9 +56,9 @@ img{width:100%;border-radius:12px;border:1px solid var(--line);display:block}
 <nav id="nav"></nav><div id="toast"></div>
 <div id="md" class="ov" hidden><div class="dlg"><h3>ล้างข้อมูลเริ่มใหม่?</h3><p>น้ำหนัก ราคา และเงินเบิกจะถูกลบ (ชื่อลูกน้องและประวัติยังอยู่)</p><div class="two"><button class="btn o sm" onclick="$('md').hidden=true">ยกเลิก</button><button class="btn d sm" onclick="doReset()">ล้างข้อมูล</button></div></div></div>
 <script>
-const DEF=["เม่า","เตง"],TD=()=>new Date().toISOString().slice(0,10);
+const n0=v=>parseFloat(v)||0;const DEF=["เม่า","เตง"],TD=()=>new Date().toISOString().slice(0,10);
 const fresh=(nm,pct)=>({date:TD(),price:"",pct:pct==null?40:pct,names:nm?nm.slice():DEF.slice(),w:[0,1].map(()=>({r:[""],cut:"",adv:""}))});
-let S=fresh(),H=[],cur=0;
+let S=fresh(),H=[],cur=0,LP=0;try{LP=n0(localStorage.getItem("rb2lp"))}catch(e){}
 try{const a=JSON.parse(localStorage.getItem("rb2")||"null");if(a&&a.w&&a.w.length===2){S=a;if(!Array.isArray(S.names)||S.names.length!==2)S.names=DEF.slice()}const h=JSON.parse(localStorage.getItem("rb2h")||"[]");if(Array.isArray(h))H=h}catch(e){}
 const sv=()=>{try{localStorage.setItem("rb2",JSON.stringify(S))}catch(e){}};
 const svh=()=>{try{localStorage.setItem("rb2h",JSON.stringify(H))}catch(e){}};
@@ -73,7 +73,7 @@ const sumR=w=>w.r.reduce((a,b)=>a+n(b),0);
 const kgOf=w=>sumR(w)-n(w.cut);
 const hasP=()=>n(S.price)>0;
 const mo=v=>hasP()?f(v):"—";
-function calc(w){const kg=kgOf(w),val=kg*n(S.price),pc=Math.min(100,Math.max(0,n(S.pct))),ws=val*pc/100;return{kg,val,pc,ws,bs:val-ws,ad:n(w.adv),nt:ws-n(w.adv)}}
+function calc(w){const kg=kgOf(w),val=kg*n(S.price),pc=Math.min(100,Math.max(0,n(S.pct))),ws=val*pc/100;if(S.rnd)ws=Math.round(ws);return{kg,val,pc,ws,bs:val-ws,ad:n(w.adv),nt:ws-n(w.adv)}}
 function toast(t){const e=$("toast");e.textContent=t;e.className="on";setTimeout(()=>e.className="",1800)}
 
 function navR(){$("nav").innerHTML=[["🧑‍🌾",NM(0)],["🧑‍🌾",NM(1)],["💰","ราคา"],["📤","ส่งต่อ"],["🕘","ประวัติ"]].map((t,i)=>`<button class="${i===cur?"on":""}" onclick="tab(${i})"><span>${t[0]}</span><em>${esc(t[1])}</em></button>`).join("")}
@@ -86,7 +86,7 @@ function rp(i){const w=S.w[i];
  <div class="card"><h2><i>⚖️</i>ชั่งน้ำหนัก</h2>
  ${w.r.map((v,j)=>`<div class="row"><input type="number" inputmode="decimal" placeholder="รอบที่ ${j+1} (กก.)" value="${v}" oninput="S.w[${i}].r[${j}]=this.value;updP(${i})">${w.r.length>1?`<button class="x" onclick="S.w[${i}].r.splice(${j},1);sv();rp(${i})">✕</button>`:""}</div>`).join("")}
  <button class="btn o" onclick="S.w[${i}].r.push('');sv();rp(${i})">+ เพิ่มรอบชั่ง</button>
- <label>หักน้ำหนักที่ยังไม่แห้ง (กก.)</label><input type="number" inputmode="decimal" placeholder="0" value="${w.cut}" oninput="S.w[${i}].cut=this.value;updP(${i})">
+ <div class="sum"><span>รวมที่ชั่ง</span><b id="rs${i}"></b></div><label>หักน้ำหนักที่ยังไม่แห้ง (กก.)</label><input type="number" inputmode="decimal" placeholder="0" value="${w.cut}" oninput="S.w[${i}].cut=this.value;updP(${i})">
  <div class="big"><span>น้ำหนักสุทธิ</span><span id="kg${i}"></span></div></div>
  <div class="card"><h2><i>💰</i>คิดเงิน</h2><div id="ph${i}" class="warn"></div>
  <div class="sum"><span>มูลค่ารวม</span><b id="v${i}"></b></div>
@@ -95,7 +95,7 @@ function rp(i){const w=S.w[i];
  <div class="big"><span>ได้สุทธิ</span><span id="t${i}"></span></div>
  <div class="sum"><span id="bl${i}"></span><b id="b${i}"></b></div></div>
  <button class="btn d" onclick="$('md').hidden=false">ล้างข้อมูลเริ่มใหม่</button>`;updP(i,1)}
-function updP(i,ns){const c=calc(S.w[i]);$("kg"+i).textContent=g(c.kg)+" กก.";$("ph"+i).textContent=hasP()?"":"⚠️ ยังไม่ได้ใส่ราคา (ไปที่แท็บ ราคา)";
+function updP(i,ns){const c=calc(S.w[i]);$("kg"+i).textContent=g(c.kg)+" กก.";$("rs"+i).textContent=g(sumR(S.w[i]))+" กก.";$("ph"+i).textContent=hasP()?"":"⚠️ ยังไม่ได้ใส่ราคา (ไปที่แท็บ ราคา)";
  $("v"+i).textContent=mo(c.val);$("sl"+i).textContent="ส่วนแบ่ง "+g(c.pc)+"%";$("s"+i).textContent=mo(c.ws);
  const t=$("t"+i);t.textContent=mo(c.nt);t.className=hasP()&&c.nt<0?"neg":"";$("bl"+i).textContent="ส่วนเถ้าแก่ "+g(100-c.pc)+"%";$("b"+i).textContent=mo(c.bs);sv()}
 
@@ -106,7 +106,7 @@ function build2(){
  <label>ราคา (บาท/กก.)</label><input id="price" type="number" inputmode="decimal" placeholder="ใส่ราคาวันนี้" value="${S.price}" oninput="S.price=this.value;upd2()">
  <div id="pw" class="warn"></div>
  <label>ลูกน้องได้ (%)</label><input id="pct" type="number" inputmode="decimal" value="${S.pct}" oninput="S.pct=this.value;upd2()">
- <div class="two" style="margin-top:10px"><button class="btn o sm" onclick="setPct(40)">40 : 60</button><button class="btn o sm" onclick="setPct(50)">50 : 50</button></div></div>`+
+ <div class="two" style="margin-top:10px"><button class="btn o sm" onclick="setPct(40)">40 : 60</button><button class="btn o sm" onclick="setPct(50)">50 : 50</button></div><label style="display:flex;gap:10px;align-items:center;color:var(--tx);font-size:15px;margin-top:14px"><input type="checkbox" style="width:22px;height:22px" ${S.rnd?"checked":""} onchange="S.rnd=this.checked;upd2()">ปัดส่วนลูกน้องเป็นบาทเต็ม</label></div>`+
  [0,1].map(i=>`<div class="card"><h2><i>🧑‍🌾</i><span id="nm${i}"></span></h2>
  <div class="sum"><span>น้ำหนักสุทธิ</span><b id="k${i}"></b></div>
  <div class="sum"><span>มูลค่ารวม</span><b id="v2${i}"></b></div>
@@ -120,12 +120,16 @@ function build2(){
  <button class="btn d" onclick="$('md').hidden=false">ล้างข้อมูลเริ่มใหม่</button>`}
 function setPct(v){S.pct=v;$("pct").value=v;upd2()}
 function upd2(){let tk=0,tb=0,tw=0;
- $("price").className=hasP()?"":"bad";$("pw").textContent=hasP()?"":"⚠️ ยังไม่ได้ใส่ราคา";
+ $("price").className=hasP()?"":"bad";$("pw").innerHTML=hasP()?"":"⚠️ ยังไม่ได้ใส่ราคา"+(LP?` <button class="btn o sm" style="display:inline;width:auto;padding:4px 12px;margin-left:6px" onclick="useLP()">ใช้ราคาล่าสุด ${g(LP)}</button>`:"");
  S.w.forEach((w,i)=>{const c=calc(w);tk+=c.kg;tb+=c.bs;tw+=c.nt;
   $("nm"+i).textContent=NM(i);$("k"+i).textContent=g(c.kg)+" กก.";$("v2"+i).textContent=mo(c.val);$("sl2"+i).textContent="ส่วนแบ่ง "+g(c.pc)+"%";$("s2"+i).textContent=mo(c.ws);
   $("a"+i).textContent=f(c.ad);const t=$("t2"+i);t.textContent=mo(c.nt);t.className=hasP()&&c.nt<0?"neg":"";$("bl2"+i).textContent="ส่วนเถ้าแก่ "+g(100-c.pc)+"%";$("b2"+i).textContent=mo(c.bs)});
  $("tk").textContent=g(tk)+" กก.";$("tb").textContent=mo(tb);$("tw").textContent=mo(tw);sv()}
-function doReset(){S=fresh(S.names,S.pct);sv();$("md").hidden=true;build2();tab(cur);toast("ล้างข้อมูลแล้ว")}
+function setLP(v){if(n(v)>0){LP=n(v);try{localStorage.setItem("rb2lp",LP)}catch(e){}}}
+function useLP(){S.price=String(LP);$("price").value=LP;upd2()}
+function resetKeep(){const k=S.rnd;setLP(S.price);S=fresh(S.names,S.pct);S.rnd=k;sv();build2()}
+function doReset(){resetKeep();$("md").hidden=true;tab(cur);toast("ล้างข้อมูลแล้ว")}
+function newRound(){saveH();resetKeep();tab(0);toast("บันทึกแล้ว เริ่มรอบใหม่")}
 
 // export
 function lines(){
@@ -144,24 +148,30 @@ function lines(){
  L.push({t:"",s:"n"});L.push({t:`รวม ${g(tk)} กก.`,s:"n"});
  L.push({t:`เถ้าแก่ได้ ${f(tb)} บาท`,s:"b"});L.push({t:`ลูกน้องรวมสุทธิ ${f(tw)} บาท`,s:"b"});return L}
 const txt=()=>lines().map(l=>l.t).join("\n");
-function img(L){const W2=720,LH=38,H2=100+L.length*LH+24,c=document.createElement("canvas");c.width=W2*2;c.height=H2*2;const x=c.getContext("2d");x.scale(2,2);
+function cv(L){const W2=720,LH=38,H2=100+L.length*LH+24,c=document.createElement("canvas");c.width=W2*2;c.height=H2*2;const x=c.getContext("2d");x.scale(2,2);
  x.fillStyle="#fff";x.fillRect(0,0,W2,H2);const gr=x.createLinearGradient(0,0,W2,0);gr.addColorStop(0,"#1f8a4c");gr.addColorStop(1,"#16a085");x.fillStyle=gr;x.fillRect(0,0,W2,70);
  const ff='"Sarabun","Noto Sans Thai",sans-serif';x.fillStyle="#fff";x.font="bold 30px "+ff;x.fillText(L[0].t,24,46);
  L.slice(1).forEach((l,k)=>{const y=70+36+k*LH;x.font=(l.s==="b"?"bold 26px ":"24px ")+ff;x.fillStyle=l.s==="g"?"#6b776b":l.s==="b"?"#1f8a4c":"#17211a";x.fillText(l.t,24,y)});
- return c.toDataURL("image/png")}
+ return c}
+const img=L=>cv(L).toDataURL("image/png");
+function shImg(){cv(lines()).toBlob(async b=>{try{const f=new File([b],"ขี้ยาง-"+S.date+".png",{type:"image/png"});if(navigator.canShare&&navigator.canShare({files:[f]}))await navigator.share({files:[f]});else toast("กดค้างที่รูปเพื่อบันทึก")}catch(e){}})}
 function r3(){const L=lines();
  $("p4").innerHTML=(hasP()?"":`<div class="card"><div class="warn" style="margin:0">⚠️ ยังไม่ได้ใส่ราคา — ไปแท็บ "ราคา" ก่อนส่ง</div></div>`)+`<div class="card"><h2><i>🖼️</i>รูปสรุป</h2><img id="im" alt="สรุป"><div class="hint">กดค้างที่รูป → บันทึก/คัดลอก แล้วส่งเข้าไลน์</div></div>
  <div class="card"><h2><i>📝</i>ข้อความ + วิธีคิด</h2><textarea id="tx" readonly>${esc(txt())}</textarea>
- <button class="btn" onclick="cp()">คัดลอกข้อความ</button><button class="btn o" onclick="sh()">แชร์ไปไลน์/แอปอื่น</button>
- <button class="btn o" onclick="saveH()">💾 บันทึกลงประวัติ</button></div>`;
+ <button class="btn" onclick="shImg()">🖼️ แชร์รูปเข้าไลน์</button><button class="btn o" onclick="cp()">คัดลอกข้อความ</button><button class="btn o" onclick="sh()">แชร์ไปไลน์/แอปอื่น</button>
+ <button class="btn o" onclick="saveH()">💾 บันทึกลงประวัติ</button><button class="btn o" onclick="newRound()">✅ บันทึก + เริ่มรอบใหม่</button></div>`;
  try{$("im").src=img(L)}catch(e){}}
 function cp(){const t=$("tx");t.focus();t.select();let ok=false;
  try{navigator.clipboard.writeText(txt()).then(()=>toast("คัดลอกแล้ว"),()=>{try{document.execCommand("copy")&&toast("คัดลอกแล้ว")}catch(e){}});ok=true}catch(e){}
  if(!ok){try{document.execCommand("copy");toast("คัดลอกแล้ว")}catch(e){toast("กดค้างที่ข้อความเพื่อคัดลอก")}}}
 async function sh(){try{await navigator.share({text:txt()})}catch(e){cp()}}
-function saveH(){let tb=0;S.w.forEach(w=>{tb+=calc(w).bs});
- H.unshift({id:Date.now(),date:S.date,tb,price:S.price,s:JSON.parse(JSON.stringify(S))});H=H.slice(0,100);svh();toast("บันทึกแล้ว")}
-function r4(){$("p5").innerHTML=`<div class="card"><h2><i>🕘</i>ประวัติ</h2>`+(H.length?H.map(h=>`<div class="hist"><div><b>${dTh(h.date)}</b><div class="hint" style="margin:0">${esc((h.s.names||DEF).join(" / "))} | ราคา ${g(n(h.price))}</div></div><div class="two"><button class="btn o sm" onclick="ld(${h.id})">เปิด</button><button class="btn d sm" onclick="dl(${h.id})">ลบ</button></div></div>`).join(""):`<div class="hint">ยังไม่มีรายการ — บันทึกจากหน้า "ส่งต่อ"</div>`)+`</div>`}
+function saveH(){let tb=0;const nets=S.w.map(w=>{const c=calc(w);tb+=c.bs;return c.nt});setLP(S.price);
+ H.unshift({id:Date.now(),date:S.date,tb,nets,price:S.price,s:JSON.parse(JSON.stringify(S))});H=H.slice(0,100);svh();toast("บันทึกแล้ว")}
+function r4(){$("p5").innerHTML=`<div class="card"><h2><i>🕘</i>ประวัติ</h2>`+(H.length?H.map(h=>`<div class="hist"><div><b>${dTh(h.date)}</b><div class="hint" style="margin:0">ราคา ${g(n(h.price))} | ${esc((h.s.names||DEF).map((x,k)=>x+" "+(h.nets?f(h.nets[k]):"")).join(" | "))}</div></div><div class="two"><button class="btn o sm" onclick="ld(${h.id})">เปิด</button><button class="btn d sm" onclick="dl(${h.id})">ลบ</button></div></div>`).join(""):`<div class="hint">ยังไม่มีรายการ — บันทึกจากหน้า "ส่งต่อ"</div>`)+`</div>
+ <div class="card"><h2><i>🛟</i>สำรอง / กู้คืนข้อมูล</h2><div class="hint">คัดลอกเก็บไว้ (เช่น ส่งเข้าไลน์ตัวเอง) แล้ววางกู้คืนเมื่อเปลี่ยนเครื่อง</div>
+ <textarea id="bk" style="height:90px" placeholder="วางข้อมูลสำรองที่นี่"></textarea><div class="two" style="margin-top:8px"><button class="btn o sm" onclick="backup()">คัดลอกสำรอง</button><button class="btn o sm" onclick="restore()">กู้คืน</button></div></div>`}
+function backup(){const t=JSON.stringify({v:2,S,H}),e=$("bk");e.value=t;e.focus();e.select();try{navigator.clipboard.writeText(t).then(()=>toast("คัดลอกข้อมูลสำรองแล้ว"),()=>{try{document.execCommand("copy");toast("คัดลอกแล้ว")}catch(x){}})}catch(x){try{document.execCommand("copy");toast("คัดลอกแล้ว")}catch(y){}}}
+function restore(){try{const o=JSON.parse($("bk").value);if(o&&o.S&&o.S.w&&o.S.w.length===2){S=o.S;if(!Array.isArray(S.names)||S.names.length!==2)S.names=DEF.slice();if(Array.isArray(o.H))H=o.H;sv();svh();build2();r4();toast("กู้คืนแล้ว")}else toast("ข้อมูลไม่ถูกต้อง")}catch(e){toast("ข้อมูลไม่ถูกต้อง")}}
 function ld(id){const h=H.find(x=>x.id===id);if(h){S=JSON.parse(JSON.stringify(h.s));if(!Array.isArray(S.names)||S.names.length!==2)S.names=DEF.slice();sv();build2();tab(2);toast("เปิดรายการแล้ว")}}
 function dl(id){H=H.filter(x=>x.id!==id);svh();r4()}
 build2();tab(0);
