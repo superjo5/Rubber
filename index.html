@@ -11,8 +11,8 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" href="icon-192.png">
 <style>
-:root{--bg:#f3f5f2;--card:#fff;--tx:#17211a;--mut:#74807a;--pri:#1f8a4c;--pri2:#16a085;--line:#e4e9e5;--warn:#d64545;--hi:#e7f6ec;--sh:0 2px 10px rgba(20,40,25,.06);box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1511;--card:#19221c;--tx:#e8f0ea;--mut:#8b9a90;--pri:#4cc27d;--pri2:#2fbfa5;--line:#26332a;--warn:#ef6b6b;--hi:#1d3226;--sh:none;color-scheme:dark}}
+:root{--bg:#f3f5f2;--c0:#e07b00;--c0b:#f5a041;--h0:#fff1e0;--c1:#2f6fe0;--c1b:#5b8def;--h1:#e8f0ff;--card:#fff;--tx:#17211a;--mut:#74807a;--pri:#1f8a4c;--pri2:#16a085;--line:#e4e9e5;--warn:#d64545;--hi:#e7f6ec;--sh:0 2px 10px rgba(20,40,25,.06);box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--c0:#ffa53d;--c0b:#e08a20;--h0:#3a2a14;--c1:#6aa0ff;--c1b:#4f86f0;--h1:#1b2a4a;--bg:#0f1511;--card:#19221c;--tx:#e8f0ea;--mut:#8b9a90;--pri:#4cc27d;--pri2:#2fbfa5;--line:#26332a;--warn:#ef6b6b;--hi:#1d3226;--sh:none;color-scheme:dark}}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html{scroll-padding-top:env(safe-area-inset-top,0px);touch-action:manipulation}
 body{margin:0;-webkit-text-size-adjust:100%;background:var(--bg);color:var(--tx);font:16px/1.45 "Sarabun","Noto Sans Thai",system-ui,sans-serif;padding-bottom:88px}
@@ -40,7 +40,15 @@ nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-w
 nav button{flex:1;min-width:0;border:0;background:none;min-height:58px;padding:8px 2px 6px;color:var(--mut);font:inherit;font-size:clamp(11px,3.1vw,13px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
 nav button span{font-size:clamp(20px,5.6vw,25px);line-height:1}
 nav button em{font-style:normal;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-nav button.on{color:var(--pri);font-weight:700}
+nav button{position:relative}nav button.on{color:var(--ac,var(--pri));font-weight:700}
+nav button.on::before{content:"";position:absolute;top:0;left:22%;right:22%;height:3px;border-radius:0 0 3px 3px;background:var(--ac,var(--pri))}
+nav button.t0{--ac:var(--c0)}nav button.t1{--ac:var(--c1)}
+.p0{--pri:var(--c0);--pri2:var(--c0b);--hi:var(--h0)}.p1{--pri:var(--c1);--pri2:var(--c1b);--hi:var(--h1)}
+.p0 .card,.p1 .card{border-left:5px solid var(--pri)}
+.cp0{border-left:5px solid var(--c0)!important;--pri:var(--c0);--hi:var(--h0)}.cp1{border-left:5px solid var(--c1)!important;--pri:var(--c1);--hi:var(--h1)}
+.hero{display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,var(--pri),var(--pri2));color:#fff;border-radius:18px;padding:14px 16px;margin-bottom:12px}
+.hero small{display:block;opacity:.85;font-size:12px}.hero b{display:block;font-size:20px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.av{font-size:30px;background:rgba(255,255,255,.22);width:52px;height:52px;border-radius:16px;display:grid;place-items:center;flex:none}
 img{width:100%;border-radius:12px;border:1px solid var(--line);display:block}
 .hint{font-size:13px;color:var(--mut);margin:6px 0}
 .hist{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 0;border-top:1px solid var(--line)}
@@ -56,10 +64,10 @@ img{width:100%;border-radius:12px;border:1px solid var(--line);display:block}
 <nav id="nav"></nav><div id="toast"></div>
 <div id="md" class="ov" hidden><div class="dlg"><h3>ล้างข้อมูลเริ่มใหม่?</h3><p>น้ำหนัก ราคา และเงินเบิกจะถูกลบ (ชื่อลูกน้องและประวัติยังอยู่)</p><div class="two"><button class="btn o sm" onclick="$('md').hidden=true">ยกเลิก</button><button class="btn d sm" onclick="doReset()">ล้างข้อมูล</button></div></div></div>
 <script>
-const n0=v=>parseFloat(v)||0;const DEF=["เม่า","เตง"],TD=()=>new Date().toISOString().slice(0,10);
-const fresh=(nm,pct)=>({date:TD(),price:"",pct:pct==null?40:pct,names:nm?nm.slice():DEF.slice(),w:[0,1].map(()=>({r:[""],cut:"",adv:""}))});
+const n0=v=>parseFloat(v)||0;const norm=s=>{s.w.forEach(w=>{if(!Array.isArray(w.advs))w.advs=[{a:w.adv||"",n:""}]});return s};const advT=w=>w.advs.reduce((a,x)=>a+(parseFloat(x.a)||0),0);const DEF=["เม่า","เตง"],TD=()=>new Date().toISOString().slice(0,10);
+const fresh=(nm,pct)=>({date:TD(),price:"",pct:pct==null?40:pct,names:nm?nm.slice():DEF.slice(),w:[0,1].map(()=>({r:[""],cut:"",advs:[{a:"",n:""}]}))});
 let S=fresh(),H=[],cur=0,LP=0;try{LP=n0(localStorage.getItem("rb2lp"))}catch(e){}
-try{const a=JSON.parse(localStorage.getItem("rb2")||"null");if(a&&a.w&&a.w.length===2){S=a;if(!Array.isArray(S.names)||S.names.length!==2)S.names=DEF.slice()}const h=JSON.parse(localStorage.getItem("rb2h")||"[]");if(Array.isArray(h))H=h}catch(e){}
+try{const a=JSON.parse(localStorage.getItem("rb2")||"null");if(a&&a.w&&a.w.length===2){S=norm(a);if(!Array.isArray(S.names)||S.names.length!==2)S.names=DEF.slice()}const h=JSON.parse(localStorage.getItem("rb2h")||"[]");if(Array.isArray(h))H=h}catch(e){}
 const sv=()=>{try{localStorage.setItem("rb2",JSON.stringify(S))}catch(e){}};
 const svh=()=>{try{localStorage.setItem("rb2h",JSON.stringify(H))}catch(e){}};
 const $=id=>document.getElementById(id);
@@ -73,16 +81,17 @@ const sumR=w=>w.r.reduce((a,b)=>a+n(b),0);
 const kgOf=w=>sumR(w)-n(w.cut);
 const hasP=()=>n(S.price)>0;
 const mo=v=>hasP()?f(v):"—";
-function calc(w){const kg=kgOf(w),val=kg*n(S.price),pc=Math.min(100,Math.max(0,n(S.pct))),ws=val*pc/100;if(S.rnd)ws=Math.round(ws);return{kg,val,pc,ws,bs:val-ws,ad:n(w.adv),nt:ws-n(w.adv)}}
+function calc(w){const kg=kgOf(w),val=kg*n(S.price),pc=Math.min(100,Math.max(0,n(S.pct))),ws=val*pc/100;if(S.rnd)ws=Math.round(ws);return{kg,val,pc,ws,bs:val-ws,ad:advT(w),nt:ws-advT(w)}}
 function toast(t){const e=$("toast");e.textContent=t;e.className="on";setTimeout(()=>e.className="",1800)}
 
-function navR(){$("nav").innerHTML=[["🧑‍🌾",NM(0)],["🧑‍🌾",NM(1)],["💰","ราคา"],["📤","ส่งต่อ"],["🕘","ประวัติ"]].map((t,i)=>`<button class="${i===cur?"on":""}" onclick="tab(${i})"><span>${t[0]}</span><em>${esc(t[1])}</em></button>`).join("")}
+function navR(){$("nav").innerHTML=[["🧑‍🌾",NM(0)],["🧑‍🌾",NM(1)],["💰","ราคา"],["📤","ส่งต่อ"],["🕘","ประวัติ"]].map((t,i)=>`<button class="t${i} ${i===cur?"on":""}" onclick="tab(${i})"><span>${t[0]}</span><em>${esc(t[1])}</em></button>`).join("")}
 function tab(i){cur=i;for(let k=0;k<5;k++)$("p"+(k+1)).hidden=k!==i;navR();
  if(i<2)rp(i);if(i===2)upd2();if(i===3)r3();if(i===4)r4();scrollTo(0,0)}
 
 // person page
 function rp(i){const w=S.w[i];
- $("p"+(i+1)).innerHTML=`<div class="card"><h2><i>✏️</i>ชื่อลูกน้อง</h2><input value="${esc(S.names[i])}" maxlength="20" placeholder="ใส่ชื่อ" oninput="S.names[${i}]=this.value;sv();navR()"></div>
+ $("p"+(i+1)).className="p"+i;$("p"+(i+1)).innerHTML=`<div class="hero"><div class="av">${["🧑‍🌾","👷"][i]}</div><div style="flex:1;min-width:0"><small>ลูกน้องคนที่ ${i+1}</small><b id="hn${i}">${esc(NM(i))}</b></div><div style="text-align:right"><small>ได้สุทธิ (บาท)</small><b id="hv${i}"></b></div></div>
+ <div class="card"><h2><i>✏️</i>ชื่อลูกน้อง</h2><input value="${esc(S.names[i])}" maxlength="20" placeholder="ใส่ชื่อ" oninput="S.names[${i}]=this.value;sv();navR();$('hn${i}').textContent=NM(${i})"></div>
  <div class="card"><h2><i>⚖️</i>ชั่งน้ำหนัก</h2>
  ${w.r.map((v,j)=>`<div class="row"><input type="number" inputmode="decimal" placeholder="รอบที่ ${j+1} (กก.)" value="${v}" oninput="S.w[${i}].r[${j}]=this.value;updP(${i})">${w.r.length>1?`<button class="x" onclick="S.w[${i}].r.splice(${j},1);sv();rp(${i})">✕</button>`:""}</div>`).join("")}
  <button class="btn o" onclick="S.w[${i}].r.push('');sv();rp(${i})">+ เพิ่มรอบชั่ง</button>
@@ -91,11 +100,11 @@ function rp(i){const w=S.w[i];
  <div class="card"><h2><i>💰</i>คิดเงิน</h2><div id="ph${i}" class="warn"></div>
  <div class="sum"><span>มูลค่ารวม</span><b id="v${i}"></b></div>
  <div class="sum"><span id="sl${i}"></span><b id="s${i}"></b></div>
- <label>หักเงินเบิก (บาท)</label><input type="number" inputmode="decimal" placeholder="0" value="${w.adv}" oninput="S.w[${i}].adv=this.value;updP(${i})">
- <div class="big"><span>ได้สุทธิ</span><span id="t${i}"></span></div>
+ <label>เงินที่เบิกไปก่อน (หักออกจากยอดที่ได้)</label>${w.advs.map((x,j)=>`<div class="row"><input type="number" inputmode="decimal" placeholder="จำนวนเงิน" value="${x.a}" oninput="S.w[${i}].advs[${j}].a=this.value;updP(${i})" style="flex:1.2"><input type="text" placeholder="หมายเหตุ/วันที่" value="${esc(x.n)}" maxlength="30" oninput="S.w[${i}].advs[${j}].n=this.value;sv()" style="flex:1;font-size:16px">${w.advs.length>1?`<button class="x" onclick="S.w[${i}].advs.splice(${j},1);sv();rp(${i})">✕</button>`:""}</div>`).join("")}<button class="btn o" onclick="S.w[${i}].advs.push({a:'',n:''});sv();rp(${i})">+ เพิ่มรายการเบิก</button><div class="sum"><span>รวมเบิก</span><b id="ad${i}"></b></div>
+ <div class="big"><span id="tl${i}">ได้สุทธิ</span><span id="t${i}"></span></div>
  <div class="sum"><span id="bl${i}"></span><b id="b${i}"></b></div></div>
  <button class="btn d" onclick="$('md').hidden=false">ล้างข้อมูลเริ่มใหม่</button>`;updP(i,1)}
-function updP(i,ns){const c=calc(S.w[i]);$("kg"+i).textContent=g(c.kg)+" กก.";$("rs"+i).textContent=g(sumR(S.w[i]))+" กก.";$("ph"+i).textContent=hasP()?"":"⚠️ ยังไม่ได้ใส่ราคา (ไปที่แท็บ ราคา)";
+function updP(i,ns){const c=calc(S.w[i]);$("kg"+i).textContent=g(c.kg)+" กก.";$("rs"+i).textContent=g(sumR(S.w[i]))+" กก.";$("ad"+i).textContent=f(c.ad);$("hv"+i).textContent=hasP()?(c.nt<0?"ค้าง ":"")+f(Math.abs(c.nt)):"—";$("tl"+i).textContent=hasP()&&c.nt<0?"ยอดค้าง (ยกไปรอบหน้า)":"ได้สุทธิ";$("ph"+i).textContent=hasP()?"":"⚠️ ยังไม่ได้ใส่ราคา (ไปที่แท็บ ราคา)";
  $("v"+i).textContent=mo(c.val);$("sl"+i).textContent="ส่วนแบ่ง "+g(c.pc)+"%";$("s"+i).textContent=mo(c.ws);
  const t=$("t"+i);t.textContent=mo(c.nt);t.className=hasP()&&c.nt<0?"neg":"";$("bl"+i).textContent="ส่วนเถ้าแก่ "+g(100-c.pc)+"%";$("b"+i).textContent=mo(c.bs);sv()}
 
@@ -107,7 +116,7 @@ function build2(){
  <div id="pw" class="warn"></div>
  <label>ลูกน้องได้ (%)</label><input id="pct" type="number" inputmode="decimal" value="${S.pct}" oninput="S.pct=this.value;upd2()">
  <div class="two" style="margin-top:10px"><button class="btn o sm" onclick="setPct(40)">40 : 60</button><button class="btn o sm" onclick="setPct(50)">50 : 50</button></div><label style="display:flex;gap:10px;align-items:center;color:var(--tx);font-size:15px;margin-top:14px"><input type="checkbox" style="width:22px;height:22px" ${S.rnd?"checked":""} onchange="S.rnd=this.checked;upd2()">ปัดส่วนลูกน้องเป็นบาทเต็ม</label></div>`+
- [0,1].map(i=>`<div class="card"><h2><i>🧑‍🌾</i><span id="nm${i}"></span></h2>
+ [0,1].map(i=>`<div class="card cp${i}"><h2><i>${["🧑‍🌾","👷"][i]}</i><span id="nm${i}"></span></h2>
  <div class="sum"><span>น้ำหนักสุทธิ</span><b id="k${i}"></b></div>
  <div class="sum"><span>มูลค่ารวม</span><b id="v2${i}"></b></div>
  <div class="sum"><span id="sl2${i}"></span><b id="s2${i}"></b></div>
@@ -129,7 +138,7 @@ function setLP(v){if(n(v)>0){LP=n(v);try{localStorage.setItem("rb2lp",LP)}catch(
 function useLP(){S.price=String(LP);$("price").value=LP;upd2()}
 function resetKeep(){const k=S.rnd;setLP(S.price);S=fresh(S.names,S.pct);S.rnd=k;sv();build2()}
 function doReset(){resetKeep();$("md").hidden=true;tab(cur);toast("ล้างข้อมูลแล้ว")}
-function newRound(){saveH();resetKeep();tab(0);toast("บันทึกแล้ว เริ่มรอบใหม่")}
+function newRound(){const cr=S.w.map(w=>{const c=calc(w);return hasP()&&c.nt<0?-c.nt:0});saveH();resetKeep();cr.forEach((v,i)=>{if(v>0)S.w[i].advs=[{a:String(Math.round(v*100)/100),n:"ยอดค้างยกมา"}]});sv();build2();tab(0);toast("บันทึกแล้ว เริ่มรอบใหม่")}
 
 // export
 function lines(){
@@ -142,8 +151,8 @@ function lines(){
   if(n(w.cut))L.push({t:`2) หักชื้น ${g(n(w.cut))} → เหลือ ${g(c.kg)} กก.`,s:"n"});
   L.push({t:`3) ${g(c.kg)} × ${f(pr)} = ${f(c.val)} บาท`,s:"n"});
   L.push({t:`4) ลูกน้อง ${g(pc)}% = ${f(c.ws)} บาท`,s:"n"});
-  if(c.ad)L.push({t:`5) หักเงินเบิก ${f(c.ad)} บาท`,s:"n"});
-  L.push({t:`➜ ${NM(i)} ได้สุทธิ ${f(c.nt)} บาท`,s:"b"});
+  if(c.ad){const it=w.advs.filter(x=>n(x.a));if(it.length>1){L.push({t:"5) หักเงินเบิก",s:"n"});it.forEach(x=>L.push({t:`    - ${f(n(x.a))}${x.n?" ("+x.n+")":""}`,s:"g"}));L.push({t:`    รวมเบิก ${f(c.ad)} บาท`,s:"n"})}else L.push({t:`5) หักเงินเบิก ${f(c.ad)} บาท${it[0]&&it[0].n?" ("+it[0].n+")":""}`,s:"n"})}
+  L.push({t:c.nt<0?`➜ ${NM(i)} ยอดค้าง ${f(-c.nt)} บาท (ยกไปรอบหน้า)`:`➜ ${NM(i)} ได้สุทธิ ${f(c.nt)} บาท`,s:"b"});
   L.push({t:`   (เถ้าแก่ ${g(100-pc)}% = ${f(c.bs)} บาท)`,s:"g"})});
  L.push({t:"",s:"n"});L.push({t:`รวม ${g(tk)} กก.`,s:"n"});
  L.push({t:`เถ้าแก่ได้ ${f(tb)} บาท`,s:"b"});L.push({t:`ลูกน้องรวมสุทธิ ${f(tw)} บาท`,s:"b"});return L}
@@ -171,8 +180,8 @@ function r4(){$("p5").innerHTML=`<div class="card"><h2><i>🕘</i>ประว�
  <div class="card"><h2><i>🛟</i>สำรอง / กู้คืนข้อมูล</h2><div class="hint">คัดลอกเก็บไว้ (เช่น ส่งเข้าไลน์ตัวเอง) แล้ววางกู้คืนเมื่อเปลี่ยนเครื่อง</div>
  <textarea id="bk" style="height:90px" placeholder="วางข้อมูลสำรองที่นี่"></textarea><div class="two" style="margin-top:8px"><button class="btn o sm" onclick="backup()">คัดลอกสำรอง</button><button class="btn o sm" onclick="restore()">กู้คืน</button></div></div>`}
 function backup(){const t=JSON.stringify({v:2,S,H}),e=$("bk");e.value=t;e.focus();e.select();try{navigator.clipboard.writeText(t).then(()=>toast("คัดลอกข้อมูลสำรองแล้ว"),()=>{try{document.execCommand("copy");toast("คัดลอกแล้ว")}catch(x){}})}catch(x){try{document.execCommand("copy");toast("คัดลอกแล้ว")}catch(y){}}}
-function restore(){try{const o=JSON.parse($("bk").value);if(o&&o.S&&o.S.w&&o.S.w.length===2){S=o.S;if(!Array.isArray(S.names)||S.names.length!==2)S.names=DEF.slice();if(Array.isArray(o.H))H=o.H;sv();svh();build2();r4();toast("กู้คืนแล้ว")}else toast("ข้อมูลไม่ถูกต้อง")}catch(e){toast("ข้อมูลไม่ถูกต้อง")}}
-function ld(id){const h=H.find(x=>x.id===id);if(h){S=JSON.parse(JSON.stringify(h.s));if(!Array.isArray(S.names)||S.names.length!==2)S.names=DEF.slice();sv();build2();tab(2);toast("เปิดรายการแล้ว")}}
+function restore(){try{const o=JSON.parse($("bk").value);if(o&&o.S&&o.S.w&&o.S.w.length===2){S=norm(o.S);if(!Array.isArray(S.names)||S.names.length!==2)S.names=DEF.slice();if(Array.isArray(o.H))H=o.H;sv();svh();build2();r4();toast("กู้คืนแล้ว")}else toast("ข้อมูลไม่ถูกต้อง")}catch(e){toast("ข้อมูลไม่ถูกต้อง")}}
+function ld(id){const h=H.find(x=>x.id===id);if(h){S=norm(JSON.parse(JSON.stringify(h.s)));if(!Array.isArray(S.names)||S.names.length!==2)S.names=DEF.slice();sv();build2();tab(2);toast("เปิดรายการแล้ว")}}
 function dl(id){H=H.filter(x=>x.id!==id);svh();r4()}
 build2();tab(0);
 try{if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(()=>{})}catch(e){}
